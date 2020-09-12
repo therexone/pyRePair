@@ -1,3 +1,8 @@
+""" 
+Python script to remove and re-pair a bluetooth device 
+after reboot on Linux
+"""
+
 from PyBluetoothctl import PyBluetoothctl
 import time
 

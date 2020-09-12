@@ -1,8 +1,4 @@
-""" 
-Python script to remove and re-pair a bluetooth device 
-after reboot in debian based distros
-"""
-# https://gist.github.com/egorf/66d88056a9d703928f93
+
 
 import time
 import pexpect 
