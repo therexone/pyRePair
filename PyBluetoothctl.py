@@ -68,7 +68,7 @@ class PyBluetoothctl:
     def get_available_devices(self):
         """Return a list of tuples of paired and discoverable devices."""
         try:
-            out = self.get_output("devices")
+            out = self.get_output("devices", 5)
         except Exception as e:
             print(e)
             return None
