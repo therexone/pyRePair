@@ -1,29 +1,34 @@
-
+"""
+Wrapper for bluetoothctl
+"""
 
 import time
-import pexpect 
+import pexpect
 import subprocess
 
-class PyBluetoothctl: 
-    
+
+class PyBluetoothctl:
+
     def __init__(self):
         # Make sure bluetooth card is unblocked and spawn bluetoothctl
-        output = subprocess.run(['rfkill', 'unblock', 'bluetooth' ], capture_output=True)
-        self.bctl_prompt = pexpect.spawn("bluetoothctl", echo=False, encoding="utf-8")
-        
+        output = subprocess.run(
+            ['rfkill', 'unblock', 'bluetooth'], capture_output=True)
+        self.bctl_prompt = pexpect.spawn(
+            "bluetoothctl", echo=False, encoding="utf-8")
+
     def get_output(self, command, pause=1):
         """ Run a command in bluetoothctl prompt, return output as a list of lines."""
-        
+
         self.bctl_prompt.sendline(command)
         time.sleep(pause)
-        start_failed = self.bctl_prompt.expect(['bluetooth', pexpect.EOF])
-        
+        start_failed = self.bctl_prompt.expect(
+            ['bluetooth', pexpect.EOF, pexpect.TIMEOUT])
+
         if start_failed:
             raise Exception('Bluetooth failed to start')
-        
-        
+
         return self.bctl_prompt.before.split('\r\n')
-    
+
     def start_scan(self):
         """Start bluetooth scanning process."""
         try:
@@ -31,7 +36,7 @@ class PyBluetoothctl:
         except Exception as e:
             print(e)
             return None
-        
+
     def make_discoverable(self):
         """Make device discoverable."""
         try:
@@ -39,12 +44,13 @@ class PyBluetoothctl:
         except Exception as e:
             print(e)
             return None
-        
+
     def parse_device_info(self, info_string):
         """Parse a string corresponding to a device."""
         device = {}
         block_list = ["[\x1b[0;", "removed"]
-        string_valid = not any(keyword in info_string for keyword in block_list)
+        string_valid = not any(
+            keyword in info_string for keyword in block_list)
 
         if string_valid:
             try:
@@ -53,14 +59,15 @@ class PyBluetoothctl:
                 pass
             else:
                 if device_position > -1:
-                    attribute_list = info_string[device_position:].split(" ", 2)
+                    attribute_list = info_string[device_position:].split(
+                        " ", 2)
                     device = {
                         "mac_address": attribute_list[1],
                         "name": attribute_list[2]
                     }
 
         return device
-    
+
     def get_available_devices(self):
         """Return a list of tuples of paired and discoverable devices."""
         try:
@@ -76,7 +83,7 @@ class PyBluetoothctl:
                     available_devices.append(device)
 
             return available_devices
-        
+
     def get_paired_devices(self):
         """Return a list of tuples of paired devices."""
         try:
@@ -92,7 +99,7 @@ class PyBluetoothctl:
                     paired_devices.append(device)
 
             return paired_devices
-        
+
     def get_discoverable_devices(self):
         """Filter paired devices out of available."""
         available = self.get_available_devices()
@@ -109,7 +116,7 @@ class PyBluetoothctl:
             return None
         else:
             return out
-    
+
     def pair(self, mac_address):
         """Try to pair with a device by mac address."""
         try:
@@ -118,10 +125,11 @@ class PyBluetoothctl:
             print(e)
             return None
         else:
-            res = self.bctl_prompt.expect(["Failed to pair", "Pairing successful", pexpect.EOF])
+            res = self.bctl_prompt.expect(
+                ["Failed to pair", "Pairing successful", pexpect.EOF])
             success = True if res == 1 else False
             return success
-    
+
     def remove(self, mac_address):
         """Remove paired device by mac address, return success of the operation."""
         try:
@@ -130,10 +138,11 @@ class PyBluetoothctl:
             print(e)
             return None
         else:
-            res = self.bctl_prompt.expect(["not available", "Device has been removed", pexpect.EOF])
+            res = self.bctl_prompt.expect(
+                ["not available", "Device has been removed", pexpect.EOF])
             success = True if res == 1 else False
             return success
-        
+
     def connect(self, mac_address):
         """Try to connect to a device by mac address."""
         try:
@@ -142,6 +151,7 @@ class PyBluetoothctl:
             print(e)
             return None
         else:
-            res = self.bctl_prompt.expect(["Failed to connect", "Connection successful", pexpect.EOF])
+            res = self.bctl_prompt.expect(
+                ["Failed to connect", "Connection successful", pexpect.EOF])
             success = True if res == 1 else False
             return success
